@@ -1,13 +1,13 @@
 <?php
 include 'functions.php';
 $pdo = pdo_connect();
-session_start();
 
+session_start();
 if(!isset($_SESSION['user'])){
     header("location:login.php");
 }else{
-    if(!empty($_SESSION['user'])){
-        if (!empty($_POST)) {
+    if(!empty($_POST)){
+        if ($_POST['token'] == $_SESSION['token']) {
             $name = trim(htmlspecialchars ($_POST['name']));
             $email = trim(htmlspecialchars ($_POST['email']));
             $phone = trim(htmlspecialchars ($_POST['phone']));
@@ -17,11 +17,7 @@ if(!isset($_SESSION['user'])){
             $stmt = $pdo->prepare('INSERT INTO contacts VALUES (?, ?, ?, ?, ?, ?)');
             $stmt->execute([$id, $name, $email, $phone, $title, $created]);
             header("location:index.php");
-        } else {
-            die ('Data Tidak Berhasil Ditambahkan');
-        }
-    } else {
-        echo "Invalid Tokens";
+        } 
     }
 }
     
@@ -49,6 +45,8 @@ if(!isset($_SESSION['user'])){
                             <input class="form-control form-control-sm" placeholder="Email" type="text" name="email" id="email" required><br>
                             <input class="form-control form-control-sm" placeholder="Phone number" type="text" name="phone" id="phone" required><br>
                             <input class="form-control form-control-sm" placeholder="Title" type="text" name="title" id="title" required><br>
+                            <input class="form-control form-control-sm" placeholder="Token" type="hidden" name="token" id="token" 
+                            value="<?=$_SESSION['token']?>"><br>
                             <input class="btn btn-primary btn-sm" type="submit" value="Save">
                             <a href="index.php" type="button" class="btn btn-warning btn-sm">Cancel</a>
                         </form>
