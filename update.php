@@ -3,27 +3,33 @@
 include 'functions.php';
 $pdo = pdo_connect();
 
-if (isset($_GET['id'])) {
-    if (!empty($_POST)) {
-        $name = trim(htmlspecialchars ($_POST['name']));
-        $email = trim(htmlspecialchars ($_POST['email']));
-        $phone = trim(htmlspecialchars ($_POST['phone']));
-        $title = trim(htmlspecialchars ($_POST['title']));
-        // Insert new record into the contacts table
-        $stmt = $pdo->prepare('UPDATE contacts SET name = ?, email = ?, phone = ?, title = ? WHERE id = ?');
-        $stmt->execute([$name, $email, $phone, $title, $_GET['id']]);
-        header("location:index.php");
+session_start();
+if(!isset($_SESSION['user'])){
+    header("location:login.php");
+}else{
+    if (isset($_GET['id'])) {
+        if (!empty($_POST)) {
+            if($_POST['token'] == $_SESSION['token']){
+                $name = trim(htmlspecialchars ($_POST['name']));
+                $email = trim(htmlspecialchars ($_POST['email']));
+                $phone = trim(htmlspecialchars ($_POST['phone']));
+                $title = trim(htmlspecialchars ($_POST['title']));
+                // Insert new record into the contacts table
+                $stmt = $pdo->prepare('UPDATE contacts SET name = ?, email = ?, phone = ?, title = ? WHERE id = ?');
+                $stmt->execute([$name, $email, $phone, $title, $_GET['id']]);
+                header("location:index.php");
+            }
+        }
+        $stmt = $pdo->prepare('SELECT * FROM contacts WHERE id = ?');
+        $stmt->execute([$_GET['id']]);
+        $contact = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$contact) {
+            die('Contact doesn\'t exist!');
+        }
+    } else {
+        die('No ID specified!');
     }
-
-    $stmt = $pdo->prepare('SELECT * FROM contacts WHERE id = ?');
-    $stmt->execute([$_GET['id']]);
-    $contact = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$contact) {
-        die('Contact doesn\'t exist!');
-    }
-} else {
-    die('No ID specified!');
-}
+ }
 
 ?>
 <!DOCTYPE html>
